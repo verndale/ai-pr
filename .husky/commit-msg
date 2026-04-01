@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+node ./node_modules/@verndale/ai-commit/bin/cli.js lint --edit "$1"
