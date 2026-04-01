@@ -1,0 +1,57 @@
+{
+  "name": "@verndale/ai-pr",
+  "version": "0.0.0",
+  "description": "Deterministic GitHub PR creation with optional AI-bounded summary — aligned with team commit conventions",
+  "license": "MIT",
+  "author": "Verndale",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/verndale/ai-pr.git"
+  },
+  "keywords": [
+    "github",
+    "pull-request",
+    "openai",
+    "git",
+    "ci",
+    "automation"
+  ],
+  "type": "commonjs",
+  "bin": {
+    "ai-pr": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=24.14.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "pr": "node ./bin/cli.js",
+    "commit": "ai-commit run",
+    "release": "semantic-release",
+    "prepublishOnly": "node -e \"require('./lib/run.js')\""
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.4",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@verndale/ai-commit": "^2.0.0",
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3"
+  }
+}
