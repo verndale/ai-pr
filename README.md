@@ -13,6 +13,22 @@ Deterministic GitHub **pull request** creation with an optional **AI-bounded** s
 pnpm add -D @verndale/ai-pr
 ```
 
+**Script name:** Use **`pr:create`** in consuming repos so commands match this package and internal docs. The CLI binary remains **`ai-pr`**; only the npm script key is standardized.
+
+Add to **`package.json`**:
+
+```json
+{
+  "scripts": {
+    "pr:create": "ai-pr"
+  }
+}
+```
+
+Run **`pnpm run pr:create`** (or **`npm run pr:create`**). Prefer that over bare **`pnpm exec ai-pr`** so script names stay consistent in scripts, CI, and runbooks.
+
+**You cannot enforce this from npm** — each repository owns its `package.json`. To align teams: use **org starter templates** with the snippet above, or a **CI check** that `package.json` includes `scripts["pr:create"]` (for example `node -e "require('./package.json').scripts['pr:create'] || process.exit(1)"`). This package publishes **`verndale.aiPr`** metadata in its own `package.json` (`recommendedScriptName` / `recommendedScriptCommand`) if internal tooling wants to read the convention programmatically via `require('@verndale/ai-pr/package.json').verndale`.
+
 ## Environment
 
 The CLI loads **`.env`** then **`.env.local`** from the **current working directory** (run it from the repo root). Values in **`.env.local`** override **`.env`** for the same key.
@@ -66,18 +82,8 @@ Workflow inputs / context also set **`PR_BASE_BRANCH`**, **`PR_DRAFT`**, and a *
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm run pr` | **In this repository:** create or update an open PR against `PR_BASE_BRANCH` (default `main`). The root package’s `bin` is not linked into `node_modules/.bin`, so use this script instead of `pnpm exec ai-pr`. |
-| `pnpm exec ai-pr` | **In another project** after `pnpm add -D @verndale/ai-pr`: run the installed CLI. |
-
-**Example** (`package.json` in a consuming repo):
-
-```json
-{
-  "scripts": {
-    "pr:create": "ai-pr"
-  }
-}
-```
+| `pnpm run pr:create` | **In this repository:** create or update an open PR against `PR_BASE_BRANCH` (default `main`). The root package’s `bin` is not linked into `node_modules/.bin`, so use this script instead of `pnpm exec ai-pr`. |
+| `pnpm exec ai-pr` | Directly invokes the **`ai-pr`** binary (same as the **`pr:create`** script). Prefer **`pnpm run pr:create`** when that script exists. |
 
 ## Development (this repository)
 
@@ -89,7 +95,7 @@ pnpm exec husky
 
 The **`husky`** step sets `core.hooksPath` for this checkout (it is not part of the published `@verndale/ai-pr` package). Omit it if you only need the CLI, not Git hooks.
 
-Copy `.env.example` to `.env` and set **`GH_TOKEN`**. On a feature branch with commits ahead of `main`, run **`pnpm pr`**.
+Copy `.env.example` to `.env` and set **`GH_TOKEN`**. On a feature branch with commits ahead of `main`, run **`pnpm run pr:create`**.
 
 ### Commits (maintainers — not shipped in `@verndale/ai-pr`)
 
@@ -108,7 +114,7 @@ Hooks use **`ai-commit`**’s bundled preset; add a root **`commitlint.config.cj
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/pr.yml` | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr`** |
+| `.github/workflows/pr.yml` | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr:create`** |
 | `.github/workflows/release.yml` | Push to **`main`** | **semantic-release** — version bump, `CHANGELOG.md`, git tag, npm publish (with provenance), GitHub Release |
 
 Add repository secret **`PR_BOT_TOKEN`** (classic PAT with **`repo`**) and any AI variables from **GitHub Actions** in the Environment section if the default `GITHUB_TOKEN` is not enough or you want AI in CI.
