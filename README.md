@@ -37,9 +37,10 @@ The CLI loads **`.env`** then **`.env.local`** from the current working director
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm exec ai-pr` | From a feature branch, create or update an open PR against `PR_BASE_BRANCH` (default `main`) |
+| `pnpm run pr` | **In this repository:** create or update an open PR against `PR_BASE_BRANCH` (default `main`). The root package’s `bin` is not linked into `node_modules/.bin`, so use this script instead of `pnpm exec ai-pr`. |
+| `pnpm exec ai-pr` | **In another project** after `pnpm add -D @verndale/ai-pr`: run the installed CLI. |
 
-**Example** (`package.json`):
+**Example** (`package.json` in a consuming repo):
 
 ```json
 {
@@ -78,7 +79,7 @@ Set **`OPENAI_API_KEY`** (and optional **`COMMIT_AI_MODEL`**) in `.env` (see `ai
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/pr.yml` | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm exec ai-pr`** |
+| `.github/workflows/pr.yml` | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr`** |
 | `.github/workflows/release.yml` | Push to **`main`** | **semantic-release** — version bump, `CHANGELOG.md`, git tag, npm publish (with provenance), GitHub Release |
 
 Set **`PR_BOT_TOKEN`** (classic PAT with `repo`) if the default `GITHUB_TOKEN` cannot open PRs across your org’s rules.
