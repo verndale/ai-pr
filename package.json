@@ -34,8 +34,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "verndale": {
+    "aiPr": {
+      "recommendedScriptName": "pr:create",
+      "recommendedScriptCommand": "ai-pr"
+    }
+  },
   "scripts": {
-    "pr": "node ./bin/cli.js",
+    "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
     "release": "semantic-release",
     "prepublishOnly": "node -e \"require('./lib/run.js')\""
