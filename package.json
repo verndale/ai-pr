@@ -23,6 +23,7 @@
   "files": [
     "bin",
     "lib",
+    ".env-example",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -44,7 +45,8 @@
     "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
     "release": "semantic-release",
-    "prepublishOnly": "node -e \"require('./lib/run.js')\""
+    "prepublishOnly": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-workspace.js')\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^17.3.1"
@@ -56,7 +58,7 @@
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.4",
     "@semantic-release/release-notes-generator": "^14.1.0",
-    "@verndale/ai-commit": "^2.0.0",
+    "@verndale/ai-commit": "^2.3.0",
     "husky": "^9.1.7",
     "semantic-release": "^25.0.3"
   }
