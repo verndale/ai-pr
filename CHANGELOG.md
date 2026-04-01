@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/verndale/ai-pr/compare/v1.0.0...v1.1.0) (2026-04-01)
+
+
+### Features
+
+* **ai-pr:** Add initial implementation of adwd file ([177de34](https://github.com/verndale/ai-pr/commit/177de342faf95d38f6b87f87b9fdf1b6b44863d3))
+
 # 1.0.0 (2026-04-01)
 
 
