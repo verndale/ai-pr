@@ -1,3 +1,10 @@
+# 1.0.0 (2026-04-01)
+
+
+### Features
+
+* **lib:** Add GitHub workflows for PR and release automation ([ff13283](https://github.com/verndale/ai-pr/commit/ff13283b41de9f6a460fa7175690070fa38a6876))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

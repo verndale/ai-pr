@@ -1,6 +1,6 @@
 {
   "name": "@verndale/ai-pr",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Deterministic GitHub PR creation with optional AI-bounded summary — aligned with team commit conventions",
   "license": "MIT",
   "author": "Verndale",
