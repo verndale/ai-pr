@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/verndale/ai-pr/compare/v1.1.1...v1.1.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* **lib:** Update environment configuration documentation ([d2f0fc0](https://github.com/verndale/ai-pr/commit/d2f0fc05a44df7bfe9f99b7b68430a1ac9b25f13))
+
 ## [1.1.1](https://github.com/verndale/ai-pr/compare/v1.1.0...v1.1.1) (2026-04-02)
 
 
