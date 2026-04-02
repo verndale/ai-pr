@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/verndale/ai-pr/compare/v1.1.3...v1.1.4) (2026-04-02)
+
+
+### Bug Fixes
+
+* **ai-pr:** Update .env-example for clarity ([afd3a98](https://github.com/verndale/ai-pr/commit/afd3a98717db017b3655539f836c70e3a1a7d276))
+
 ## [1.1.3](https://github.com/verndale/ai-pr/compare/v1.1.2...v1.1.3) (2026-04-02)
 
 
