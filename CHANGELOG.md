@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/verndale/ai-pr/compare/v1.1.0...v1.1.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* **lib:** Improve formatting in environment initialization ([611c49a](https://github.com/verndale/ai-pr/commit/611c49a89b87ed6f7d1215c6d978a64eb385b015))
+
 # [1.1.0](https://github.com/verndale/ai-pr/compare/v1.0.0...v1.1.0) (2026-04-01)
 
 
