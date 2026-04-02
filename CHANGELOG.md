@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/verndale/ai-pr/compare/v1.2.0...v1.3.0) (2026-04-02)
+
+
+### Features
+
+* **ci:** Update workflows to use Node 24 runtime ([c530de6](https://github.com/verndale/ai-pr/commit/c530de67d5bade0177c73f3e6ef2f48c8779f88d))
+* **lib:** Enhance environment setup and Git integration ([362998e](https://github.com/verndale/ai-pr/commit/362998e8dc12cb11d3327dfa30f84d47001d9be0))
+
 # [1.2.0](https://github.com/verndale/ai-pr/compare/v1.1.5...v1.2.0) (2026-04-02)
 
 
