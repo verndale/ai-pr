@@ -31,8 +31,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0(semantic-release@25.0.3(typescript@6.0.2))
       '@verndale/ai-commit':
-        specifier: ^2.5.1
-        version: 2.5.2(@types/node@25.5.0)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.2)
+        specifier: ^2.5.3
+        version: 2.5.3(@types/node@25.5.0)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.2)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -276,8 +276,8 @@ packages:
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
-  '@verndale/ai-commit@2.5.2':
-    resolution: {integrity: sha512-xpoFnsO7unpePOdTSZNLDCCqdSHAv7NPc0irv4G0+9VIFyswo7XmF7MnOLb+2P0HqMgjS+8Tvu4u7BJgMkFOIg==}
+  '@verndale/ai-commit@2.5.3':
+    resolution: {integrity: sha512-t9X5CHz3dEib+e70YGpWpH2L6bCNSRGoXX/0K0bCcVXof9xjalCIIq47jei77KLdRIHwWqoc6IZiV1EIMD1w+g==}
     engines: {node: '>=24.14.0'}
     hasBin: true
 
@@ -1833,7 +1833,7 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
-  '@verndale/ai-commit@2.5.2(@types/node@25.5.0)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.2)':
+  '@verndale/ai-commit@2.5.3(@types/node@25.5.0)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.2)':
     dependencies:
       '@commitlint/cli': 20.5.0(@types/node@25.5.0)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.2)
       '@commitlint/config-conventional': 20.5.0
