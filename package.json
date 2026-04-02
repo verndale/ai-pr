@@ -23,6 +23,7 @@
   "files": [
     "bin",
     "lib",
+    "templates",
     ".env-example",
     "README.md",
     "LICENSE",
@@ -39,7 +40,7 @@
     "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
     "release": "semantic-release",
-    "prepublishOnly": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-workspace.js')\"",
+    "prepublishOnly": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-workspace.js'); require('./lib/init-workflow.js'); require('./lib/workflow-pm.js'); require('./lib/init-next-steps.js')\"",
     "prepare": "husky"
   },
   "dependencies": {

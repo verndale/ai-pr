@@ -42,9 +42,12 @@ pnpm exec ai-pr init
 | Action | Detail |
 | --- | --- |
 | Env files | Merges **`.env`** and **`.env-example`**; creates **`.env-example`** when missing. The **@verndale/ai-pr** keys are defined in code; **[`.env-example`](.env-example)** in the package matches that template for reference. |
-| `package.json` | Adds **`scripts.pr:create`** when absent (see **`verndale.aiPr`** in this package’s `package.json`). |
+| `package.json` | Adds **`scripts.pr:create`** when absent (runs **`ai-pr`**). |
+| **`.github/workflows/pr.yml`** | Writes the bundled workflow (**pnpm** or **npm**: **`pnpm run pr:create`** / **`npm run pr:create`**) when **`pr.yml`** is missing. Template is chosen from **`packageManager`** / lockfiles, or **`--pnpm`**, **`--npm`**, **`--workflow=`**. Skipped with **`--env-only`**. **`--force`** overwrites an existing file. |
 
-If **`package.json`** changed, run **`pnpm install`** (or `npm install`) again.
+If **`package.json`** changed, run **`pnpm install`** or **`npm install`** again.
+
+After **`init`**, the CLI prints **Next steps** (GitHub secret **`PR_BOT_TOKEN`**, optional AI vars, lockfile reminders).
 
 **Secrets:** If you run the CLI **locally**, set **`GH_TOKEN`** or **`GITHUB_TOKEN`** in **`.env`** / **`.env.local`**. If you only create PRs **in GitHub Actions**, supply the token in the workflow — you do not need a local **`.env`** for that.
 
@@ -60,16 +63,19 @@ Use **`pnpm run pr:create`** (or **`npm run pr:create`**). Prefer that over bare
 
 | Flag | Use when |
 | --- | --- |
-| *(none)* | Env merge + **`pr:create`** in **`package.json`** when the file exists and merge is enabled. |
-| `--env-only` | You only want env / **`.env-example`** updates — no **`package.json`** merge. |
-| `--husky` | Skips **`package.json`** (same flag name as [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit); this package does **not** install Husky). Combine with **`--workspace`** if you need **`package.json`** merged again. |
-| `--force` | Replace **`.env`** and **`.env-example`** with the built-in **@verndale/ai-pr** template **(destructive)**. |
+| *(none)* | Env merge + **`pr:create`** in **`package.json`** when the file exists and merge is enabled + install **`.github/workflows/pr.yml`** when missing. |
+| `--env-only` | Env / **`.env-example`** only — no **`package.json`**, no workflow file. |
+| `--husky` | Skips **`package.json`** (same flag name as [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit); this package does **not** install Husky). Workflow **`pr.yml`** is still installed when missing. Combine with **`--workspace`** if you need **`package.json`** merged again. |
+| `--force` | Replace **`.env`** / **`.env-example`** with the built-in template **and** overwrite **`.github/workflows/pr.yml`** if it exists **(destructive)**. |
+| **`--pnpm`**, **`--npm`**, **`--workflow=pnpm`**, **`--workflow=npm`** | Force which bundled workflow template is used (otherwise: **`packageManager`** in **`package.json`**, then **`pnpm-lock.yaml`** / **`package-lock.json`**, default **pnpm**). |
 
 **Edge cases**
 
 | Situation | Behavior |
 | --- | --- |
-| Without **`--force`** | Missing **`.env-example`** is created; otherwise missing **@verndale/ai-pr** keys are **appended** to **`.env`** and **`.env-example`** without wiping the file. |
+| Without **`--force`** | Missing **`.env-example`** is created; otherwise missing **@verndale/ai-pr** keys are **appended** to **`.env`** and **`.env-example`** without wiping the file. **`pr.yml`** is written only if **`.github/workflows/pr.yml`** does not exist. |
+| **npm workflow** | Uses **`npm ci`** — commit **`package-lock.json`**. |
+| **pnpm workflow** | Uses **`pnpm install --frozen-lockfile`** — commit **`pnpm-lock.yaml`**. |
 | Template filename | The reference file is **`.env-example`** (hyphen), not **`.env.example`**. |
 | Git hooks / commits | For **Git hooks** and conventional commits, use [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit) and **`ai-commit init`** — not **`ai-pr init`**. |
 
@@ -90,6 +96,8 @@ pnpm exec ai-pr init --env-only
 pnpm exec ai-pr init --husky
 pnpm exec ai-pr init --husky --workspace
 pnpm exec ai-pr init --force
+pnpm exec ai-pr init --npm
+pnpm exec ai-pr init --workflow=pnpm
 ```
 
 ---
