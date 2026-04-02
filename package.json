@@ -40,7 +40,8 @@
     "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
     "release": "semantic-release",
-    "prepublishOnly": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-workspace.js'); require('./lib/init-workflow.js'); require('./lib/workflow-pm.js'); require('./lib/init-next-steps.js')\"",
+    "test": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-paths.js'); require('./lib/init-git.js'); require('./lib/init-workspace.js'); require('./lib/init-workflow.js'); require('./lib/workflow-pm.js'); require('./lib/init-next-steps.js')\"",
+    "prepublishOnly": "npm test",
     "prepare": "husky"
   },
   "dependencies": {
@@ -53,7 +54,7 @@
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.4",
     "@semantic-release/release-notes-generator": "^14.1.0",
-    "@verndale/ai-commit": "^2.4.4",
+    "@verndale/ai-commit": "^2.5.1",
     "husky": "^9.1.7",
     "semantic-release": "^25.0.3"
   }

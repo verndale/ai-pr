@@ -24,6 +24,10 @@ concurrency:
   group: pr-${{ github.ref }}
   cancel-in-progress: true
 
+# Run checkout/setup-node/cache actions on Node 24 (GitHub Actions JS runtime).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   pr:
     runs-on: ubuntu-latest
