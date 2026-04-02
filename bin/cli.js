@@ -5,6 +5,8 @@ const path = require("path");
 const fs = require("fs");
 
 const { mergeAiPrEnvFile } = require("../lib/init-env.js");
+const { resolveEnvExamplePath, findPackageRoot } = require("../lib/init-paths.js");
+const { isInGitRepo, getGitRoot } = require("../lib/init-git.js");
 const { mergePackageJsonForAiPr } = require("../lib/init-workspace.js");
 const { installBundledPrWorkflow } = require("../lib/init-workflow.js");
 const { detectWorkflowPackageManager } = require("../lib/workflow-pm.js");
@@ -20,12 +22,14 @@ Usage:
 
 Commands:
   run   Create or update a PR (default when no subcommand is given).
-  init  Merge .env and .env-example, add pr:create to package.json when applicable, and
-        install .github/workflows/pr.yml when missing (pnpm or npm template). Package manager
-        for the workflow is auto-detected from packageManager / lockfiles, or set with --pnpm,
-        --npm, or --workflow=. --env-only stops after env files. --husky skips package.json;
-        --workspace includes it again. --force replaces .env / .env-example and can overwrite
-        pr.yml.
+  init  Merge env and example file, add pr:create to package.json when applicable, and
+        install .github/workflows/pr.yml at the repo root when missing (pnpm or npm template).
+        Env merge targets .env.local when that file exists, else .env under the nearest
+        package.json (from cwd). --force replaces .env / the resolved example file and can
+        overwrite pr.yml; it does not wholesale-replace .env.local (keys are merged only).
+        Package manager for the workflow is detected from the package root (packageManager /
+        lockfiles), or set with --pnpm, --npm, or --workflow=. --env-only stops after env files.
+        --husky skips package.json; --workspace includes it again.
 
 Environment:
   See .env-example after init, or the README. Loads .env then .env.local (override).
@@ -70,7 +74,8 @@ function parseInitArgv(argv) {
   return { force, husky, workspace, envOnly, workflowExplicit };
 }
 
-function reportEnvResult(kind, envRel, packageName) {
+function reportEnvResult(kind, envRel, packageName, options = {}) {
+  const { mergeEnvIntoLocal = false } = options;
   switch (kind) {
     case "replaced":
       process.stdout.write(`Replaced ${envRel} with bundled template (--force).\n`);
@@ -83,7 +88,9 @@ function reportEnvResult(kind, envRel, packageName) {
       break;
     case "unchanged":
       process.stdout.write(
-        `No missing ${packageName} keys in ${envRel}; left unchanged. Use --force to replace the file with the bundled template.\n`,
+        mergeEnvIntoLocal
+          ? `No missing ${packageName} keys in ${envRel}; left unchanged.\n`
+          : `No missing ${packageName} keys in ${envRel}; left unchanged. Use --force to replace the file with the bundled template.\n`,
       );
       break;
     default:
@@ -94,24 +101,52 @@ function reportEnvResult(kind, envRel, packageName) {
 function cmdInit(argv) {
   const { force, husky, workspace, envOnly, workflowExplicit } = parseInitArgv(argv);
   const cwd = process.cwd();
-  const packageManager = detectWorkflowPackageManager(cwd, workflowExplicit);
-  /** Full package.json merge: default on, or \`--workspace\`; off for \`--husky\` alone (same as ai-commit). */
-  const mergePackageJson = !husky || workspace;
-  const examplePath = path.join(__dirname, "..", ".env-example");
+  const bundledExamplePath = path.join(__dirname, "..", ".env-example");
 
-  if (!fs.existsSync(examplePath)) {
+  if (!fs.existsSync(bundledExamplePath)) {
     throw new Error("Missing bundled .env-example (corrupt install?).");
   }
 
-  const envDest = path.join(cwd, ".env");
-  const envResult = mergeAiPrEnvFile(envDest, { force });
-  const envRel = path.relative(cwd, envDest) || ".env";
-  reportEnvResult(envResult.kind, envRel, "@verndale/ai-pr");
+  const inGit = isInGitRepo(cwd);
+  const gitRoot = inGit ? getGitRoot(cwd) : null;
+  const packageRoot = findPackageRoot(cwd, gitRoot);
+  const packageManager = detectWorkflowPackageManager(packageRoot, workflowExplicit);
 
-  const envExampleDest = path.join(cwd, ".env-example");
-  const exResult = mergeAiPrEnvFile(envExampleDest, { force });
-  const exRel = path.relative(cwd, envExampleDest) || ".env-example";
+  if (
+    inGit &&
+    gitRoot &&
+    path.resolve(packageRoot) !== path.resolve(gitRoot)
+  ) {
+    process.stdout.write(
+      `Note: env files are updated under ${packageRoot}; workflow is installed at ${gitRoot}/.github/workflows.\n`,
+    );
+  }
+
+  const envLocalPath = path.join(packageRoot, ".env.local");
+  const envPath = path.join(packageRoot, ".env");
+  const envMergePath = fs.existsSync(envLocalPath) ? envLocalPath : envPath;
+  const mergeEnvIntoLocal =
+    path.resolve(envMergePath) === path.resolve(envLocalPath);
+  const envForce = force && !mergeEnvIntoLocal;
+  if (force && mergeEnvIntoLocal) {
+    process.stderr.write(
+      "note: --force does not replace .env.local with the bundled template; @verndale/ai-pr keys are merged (append / docs) only.\n",
+    );
+  }
+
+  const envResult = mergeAiPrEnvFile(envMergePath, bundledExamplePath, {
+    force: envForce,
+  });
+  const envRel = path.relative(cwd, envMergePath) || path.basename(envMergePath);
+  reportEnvResult(envResult.kind, envRel, "@verndale/ai-pr", { mergeEnvIntoLocal });
+
+  const envExampleDest = resolveEnvExamplePath(packageRoot);
+  const exResult = mergeAiPrEnvFile(envExampleDest, bundledExamplePath, { force });
+  const exRel = path.relative(cwd, envExampleDest) || path.basename(envExampleDest);
   reportEnvResult(exResult.kind, exRel, "@verndale/ai-pr");
+
+  /** Full package.json merge: default on, or \`--workspace\`; off for \`--husky\` alone (same as ai-commit). */
+  const mergePackageJson = !husky || workspace;
 
   if (envOnly) {
     printInitNextSteps({
@@ -122,7 +157,7 @@ function cmdInit(argv) {
   }
 
   if (mergePackageJson) {
-    const pkgPath = path.join(cwd, "package.json");
+    const pkgPath = path.join(packageRoot, "package.json");
     if (fs.existsSync(pkgPath)) {
       const { changed } = mergePackageJsonForAiPr(pkgPath);
       if (changed) {
@@ -131,12 +166,15 @@ function cmdInit(argv) {
         );
       }
     } else {
-      process.stdout.write("No package.json in this directory; skipped package.json merge.\n");
+      process.stdout.write(`No package.json at ${packageRoot}; skipped package.json merge.\n`);
     }
   }
 
-  const wfResult = installBundledPrWorkflow(cwd, { force, packageManager });
-  const wfRel = path.relative(cwd, path.join(cwd, ".github", "workflows", "pr.yml")) || ".github/workflows/pr.yml";
+  const workflowBase = gitRoot || packageRoot;
+  const wfResult = installBundledPrWorkflow(workflowBase, { force, packageManager });
+  const wfRel =
+    path.relative(cwd, path.join(workflowBase, ".github", "workflows", "pr.yml")) ||
+    ".github/workflows/pr.yml";
   const pmLabel = wfResult.packageManager === "npm" ? "npm" : "pnpm";
   switch (wfResult.kind) {
     case "wrote":
