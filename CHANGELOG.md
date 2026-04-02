@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/verndale/ai-pr/compare/v1.3.1...v1.3.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* **ai-pr:** Update ai-commit package version ([befe0b2](https://github.com/verndale/ai-pr/commit/befe0b2682fff927cb9584db1f5e500a19405901))
+
 ## [1.3.1](https://github.com/verndale/ai-pr/compare/v1.3.0...v1.3.1) (2026-04-02)
 
 
