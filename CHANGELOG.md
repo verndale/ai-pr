@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/verndale/ai-pr/compare/v1.1.5...v1.2.0) (2026-04-02)
+
+
+### Features
+
+* **lib:** Enhance CLI initialization with workflow file supp ([df34aa1](https://github.com/verndale/ai-pr/commit/df34aa13f0cc60e14a3bb8917c372debb47ad7ad))
+
 ## [1.1.5](https://github.com/verndale/ai-pr/compare/v1.1.4...v1.1.5) (2026-04-02)
 
 
