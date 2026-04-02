@@ -40,8 +40,7 @@
     "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
     "release": "semantic-release",
-    "test": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-paths.js'); require('./lib/init-git.js'); require('./lib/init-workspace.js'); require('./lib/init-workflow.js'); require('./lib/workflow-pm.js'); require('./lib/init-next-steps.js')\"",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "node -e \"require('./lib/run.js'); require('./lib/init-env.js'); require('./lib/init-paths.js'); require('./lib/init-git.js'); require('./lib/init-workspace.js'); require('./lib/init-workflow.js'); require('./lib/workflow-pm.js'); require('./lib/init-next-steps.js')\"",
     "prepare": "husky"
   },
   "dependencies": {
