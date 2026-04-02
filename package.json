@@ -35,12 +35,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "verndale": {
-    "aiPr": {
-      "recommendedScriptName": "pr:create",
-      "recommendedScriptCommand": "ai-pr"
-    }
-  },
   "scripts": {
     "pr:create": "node ./bin/cli.js",
     "commit": "ai-commit run",
@@ -58,7 +52,7 @@
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.4",
     "@semantic-release/release-notes-generator": "^14.1.0",
-    "@verndale/ai-commit": "^2.4.1",
+    "@verndale/ai-commit": "^2.4.4",
     "husky": "^9.1.7",
     "semantic-release": "^25.0.3"
   }
