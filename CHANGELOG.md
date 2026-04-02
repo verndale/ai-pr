@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/verndale/ai-pr/compare/v1.3.0...v1.3.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* **ai-pr:** Remove pre-commit hook for testing ([90f14de](https://github.com/verndale/ai-pr/commit/90f14de639e6969333a4ed966c4a27c07e0dd403))
+
 # [1.3.0](https://github.com/verndale/ai-pr/compare/v1.2.0...v1.3.0) (2026-04-02)
 
 
