@@ -81,12 +81,12 @@ function cmdInit(argv) {
   }
 
   const envDest = path.join(cwd, ".env");
-  const envResult = mergeAiPrEnvFile(envDest, examplePath, { force });
+  const envResult = mergeAiPrEnvFile(envDest, { force });
   const envRel = path.relative(cwd, envDest) || ".env";
   reportEnvResult(envResult.kind, envRel, "@verndale/ai-pr");
 
   const envExampleDest = path.join(cwd, ".env-example");
-  const exResult = mergeAiPrEnvFile(envExampleDest, examplePath, { force });
+  const exResult = mergeAiPrEnvFile(envExampleDest, { force });
   const exRel = path.relative(cwd, envExampleDest) || ".env-example";
   reportEnvResult(exResult.kind, exRel, "@verndale/ai-pr");
 
