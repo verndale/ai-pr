@@ -6,87 +6,100 @@ Deterministic GitHub **pull request** creation with an optional **AI-bounded** s
 
 ## Requirements
 
-| | |
+| Requirement | Notes |
 | --- | --- |
-| **Node.js** | `>=24.14.0` |
+| **Node.js** | `>=24.14.0` (see `engines` in `package.json`) |
 | **Package manager** | This repo pins **pnpm** in `package.json`. Enable with [Corepack](https://nodejs.org/api/corepack.html): `corepack enable`. |
 
 ---
 
-## Install
+## Quick start
 
-```bash
-pnpm add -D @verndale/ai-pr
-```
+Do this **from the directory that contains your app’s `package.json`** (in a monorepo that is often **not** the git repository root).
 
-**npm** and **yarn** work too (`npm install -D @verndale/ai-pr`). Where this doc says `pnpm exec`, use your tool’s equivalent (`npx`, `yarn exec`, etc.).
+1. **Add the dependency**
+
+   ```bash
+   pnpm add -D @verndale/ai-pr
+   ```
+
+   **npm** and **yarn** work too (`npm install -D @verndale/ai-pr`). Where this doc says `pnpm exec`, use `npx`, `yarn exec`, or your usual equivalent.
+
+2. **Run init** (merges env files, adds **`pr:create`** when missing, installs **`.github/workflows/pr.yml`** when missing)
+
+   ```bash
+   pnpm exec ai-pr init
+   ```
+
+3. **Install dependencies** if init changed `package.json` — init may print a reminder to run **`pnpm install`** / **`npm install`** (it picks **pnpm** / **npm** / **yarn** / **bun** from the nearest lockfile).
+
+4. **Set tokens** in **`.env`** and/or **`.env.local`** (under the **package root** after init — see [How paths work](#how-paths-work)). Copy **[`.env-example`](.env-example)** or rely on init’s merge; set **`GH_TOKEN`** or **`GITHUB_TOKEN`** for local CLI runs, and optional **`PR_*`** / AI variables as needed. If both files define the same key, **`.env.local`** wins.
+
+5. **Create or update the PR** with **`pnpm run pr:create`** (or **`npm run pr:create`**). Run from the directory whose **`.env`** / **`.env.local`** should load (see [How paths work](#how-paths-work)). Prefer **`pnpm run pr:create`** over bare **`pnpm exec ai-pr`** so names stay consistent in scripts, CI, and runbooks.
+
+**Secrets:** If you only create PRs **in GitHub Actions**, supply the token in the workflow — you do not need a local **`.env`** for that. After **`init`**, the CLI prints **Next steps** (secret **`PR_BOT_TOKEN`**, optional AI vars, lockfile reminders).
 
 ---
 
-## Setup
+## How paths work
 
-Do these **in order** from your **git repository root** (the directory that contains `package.json`).
-
-### 1. Install the package
-
-See [Install](#install).
-
-### 2. Run init
-
-```bash
-pnpm exec ai-pr init
-```
-
-**What init does (by default):**
-
-| Action | Detail |
+| Term | Meaning |
 | --- | --- |
-| Env files | Merges **`.env`** and **`.env-example`**; creates **`.env-example`** when missing. The **@verndale/ai-pr** keys are defined in code; **[`.env-example`](.env-example)** in the package matches that template for reference. |
-| `package.json` | Adds **`scripts.pr:create`** when absent (runs **`ai-pr`**). |
-| **`.github/workflows/pr.yml`** | Writes the bundled workflow (**pnpm** or **npm**: **`pnpm run pr:create`** / **`npm run pr:create`**) when **`pr.yml`** is missing. Template is chosen from **`packageManager`** / lockfiles, or **`--pnpm`**, **`--npm`**, **`--workflow=`**. Skipped with **`--env-only`**. **`--force`** overwrites an existing file. |
+| **Package root** | [`findPackageRoot`](lib/init-paths.js) walks from the current working directory toward the git root; the first directory with **`package.json`** wins (if there is no git root, **`cwd`** is used). Init uses this for merging **`.env`** / **`.env.local`**, updating **`package.json`**, and resolving the example env path. |
+| **Git root** | Used for installing **[`.github/workflows/pr.yml`](.github/workflows/pr.yml)** at the repository root. In [`bin/cli.js`](bin/cli.js), **`workflowBase`** is **`gitRoot || packageRoot`**, so the workflow lands at the git root when you are in a repo. |
+| **Run vs init** | **`ai-pr`** / **`ai-pr run`** loads **`.env`** then **`.env.local`** from the **current working directory** only ([`cmdRun`](bin/cli.js) uses `dotenv` with default paths). That differs from **`ai-pr init`**, which resolves env files under the **package root**. In a monorepo, run the CLI from the directory whose **`.env`** you intend to load, or rely on CI — **init** does not change where **`run`** looks for env files. |
+| **Example env file** | [`resolveEnvExamplePath`](lib/init-paths.js) prefers **`.env.example`**, else **`.env-example`**, and prints a warning if both exist. The published template in the package remains hyphenated: **[`.env-example`](.env-example)**. |
+
+---
+
+## What `ai-pr init` does (default)
+
+### Environment
+
+- Merges **@verndale/ai-pr** keys into **`.env.local`** if that file exists; otherwise into **`.env`** (creates **`.env`** from the bundled template when missing). **`--force`** does not wholesale-replace **`.env.local`** (keys are merged / documented only).
+- Updates the **example env file** on disk: [`resolveEnvExamplePath`](lib/init-paths.js) chooses **`.env.example`** or **`.env-example`** as above; if both dot forms exist, **`.env.example`** is used and a warning is printed.
+- The **npm package** ships the hyphenated template as **[`.env-example`](.env-example)**.
+
+### `package.json` (at package root)
+
+- Adds **`scripts.pr:create`** when absent (runs **`ai-pr`**). Skipped with **`--env-only`** or **`--husky`** without **`--workspace`**.
+
+### Workflow
+
+- Writes the bundled **`.github/workflows/pr.yml`** when **`pr.yml`** is missing (**pnpm** or **npm** template: **`pnpm run pr:create`** / **`npm run pr:create`**). Template follows **`packageManager`** / lockfiles, or **`--pnpm`**, **`--npm`**, **`--workflow=`**. **`--force`** can overwrite an existing workflow. Skipped with **`--env-only`**.
 
 If **`package.json`** changed, run **`pnpm install`** or **`npm install`** again.
 
-After **`init`**, the CLI prints **Next steps** (GitHub secret **`PR_BOT_TOKEN`**, optional AI vars, lockfile reminders).
-
-**Secrets:** If you run the CLI **locally**, set **`GH_TOKEN`** or **`GITHUB_TOKEN`** in **`.env`** / **`.env.local`**. If you only create PRs **in GitHub Actions**, supply the token in the workflow — you do not need a local **`.env`** for that.
-
-### 3. Run PR create
-
-Use **`pnpm run pr:create`** (or **`npm run pr:create`**). Prefer that over bare **`pnpm exec ai-pr`** so script names stay consistent in scripts, CI, and runbooks.
-
-**Script name:** Use **`pr:create`** in consuming repos so commands match this package and internal docs. The CLI binary remains **`ai-pr`**. **You cannot enforce this from npm** — each repository owns its `package.json`. To align teams: use org starter templates, **`ai-pr init`**, or a CI check that `package.json` includes `scripts["pr:create"]`.
-
 ---
 
-### Init: flags and shortcuts
+## Init flags
 
 | Flag | Use when |
 | --- | --- |
 | *(none)* | Env merge + **`pr:create`** in **`package.json`** when the file exists and merge is enabled + install **`.github/workflows/pr.yml`** when missing. |
-| `--env-only` | Env / **`.env-example`** only — no **`package.json`**, no workflow file. |
-| `--husky` | Skips **`package.json`** (same flag name as [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit); this package does **not** install Husky). Workflow **`pr.yml`** is still installed when missing. Combine with **`--workspace`** if you need **`package.json`** merged again. |
-| `--force` | Replace **`.env`** / **`.env-example`** with the built-in template **and** overwrite **`.github/workflows/pr.yml`** if it exists **(destructive)**. |
+| **`--env-only`** | Env / example file only — no **`package.json`**, no workflow file. |
+| **`--husky`** | Skips **`package.json`** (same flag name as [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit); this package does **not** install Husky). Workflow **`pr.yml`** is still installed when missing. Combine with **`--workspace`** if you need **`package.json`** merged again. |
+| **`--force`** | Replace **`.env`** / the resolved example file with the built-in template **and** overwrite **`.github/workflows/pr.yml`** if it exists (**destructive**), subject to **`.env.local`** merge rules above. |
 | **`--pnpm`**, **`--npm`**, **`--workflow=pnpm`**, **`--workflow=npm`** | Force which bundled workflow template is used (otherwise: **`packageManager`** in **`package.json`**, then **`pnpm-lock.yaml`** / **`package-lock.json`**, default **pnpm**). |
 
-**Edge cases**
+### When behavior differs
 
 | Situation | Behavior |
 | --- | --- |
-| Without **`--force`** | Missing **`.env-example`** is created; otherwise missing **@verndale/ai-pr** keys are **appended** to **`.env`** and **`.env-example`** without wiping the file. **`pr.yml`** is written only if **`.github/workflows/pr.yml`** does not exist. |
+| Without **`--force`** | Missing **`.env-example`** / resolved example is created; otherwise missing **@verndale/ai-pr** keys are **appended** to **`.env`** and the example file without wiping existing values. **`pr.yml`** is written only if **`.github/workflows/pr.yml`** does not exist. |
 | **npm workflow** | Uses **`npm ci`** — commit **`package-lock.json`**. |
 | **pnpm workflow** | Uses **`pnpm install --frozen-lockfile`** — commit **`pnpm-lock.yaml`**. |
-| Template filename | The reference file is **`.env-example`** (hyphen), not **`.env.example`**. |
+| Template filename | The reference file is **`.env-example`** (hyphen), not **`.env.example`**, unless you only use **`.env.example`** (see [How paths work](#how-paths-work)). |
 | Git hooks / commits | For **Git hooks** and conventional commits, use [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit) and **`ai-commit init`** — not **`ai-pr init`**. |
 
 ---
 
-### Setup — command cheat sheet
+## Command cheat sheet
 
 ```bash
 pnpm add -D @verndale/ai-pr
 pnpm exec ai-pr init
-# Set GH_TOKEN / GITHUB_TOKEN in .env or .env.local for local CLI runs
+# Set GH_TOKEN / GITHUB_TOKEN in .env or .env.local for local CLI runs (see How paths work)
 ```
 
 Optional variants:
@@ -104,7 +117,7 @@ pnpm exec ai-pr init --workflow=pnpm
 
 ## Environment variables
 
-The CLI loads **`.env`**, then **`.env.local`** from the **current working directory** (run from the repo root). Values in **`.env.local`** override **`.env`** for the same key.
+The **`run`** command loads **`.env`**, then **`.env.local`** from the **current working directory** (later file wins on duplicate keys). **`init`** merges under the **package root** — see [How paths work](#how-paths-work).
 
 Copy **[`.env-example`](.env-example)** to **`.env`** and fill in what you need, or run **`pnpm exec ai-pr init`** so missing keys are merged.
 
@@ -130,16 +143,32 @@ Copy **[`.env-example`](.env-example)** to **`.env`** and fill in what you need,
 - Each bullet must include at least one **allowed** 7-character commit hash from the PR range; invented hashes cause validation to fall back to the deterministic placeholder.
 - A second optional call may append **Suggested labels / Review checklist** markdown.
 
-### Maintainers — `@verndale/ai-commit` (this repository only)
+---
 
-Not part of the published **`@verndale/ai-pr`** package. Used for **`pnpm run commit`** and Husky hooks.
+## CLI reference
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| **`OPENAI_API_KEY`** | For AI-generated commit messages | See [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit). |
-| **`COMMIT_AI_MODEL`** | No | Optional model override for `ai-commit`. |
+| Command | Purpose |
+| --- | --- |
+| **`pnpm run pr:create`** | Create or update an open PR against **`PR_BASE_BRANCH`** (default **`main`**). Same as invoking the **`ai-pr`** binary from **`node_modules/.bin`** when your script is wired that way. |
+| **`pnpm exec ai-pr`** | Directly invokes the **`ai-pr`** binary. Prefer **`pnpm run pr:create`** when that script exists so commands stay consistent. |
+| **`pnpm exec ai-pr init`** | Env merge, optional **`package.json`** and workflow install. See [Init flags](#init-flags). |
+| **`ai-pr`** / **`ai-pr run`** | Same as **`pr:create`** when run via **`node_modules/.bin`**. |
 
-### GitHub Actions (`pr.yml`)
+### `package.json` script (example)
+
+```json
+{
+  "scripts": {
+    "pr:create": "ai-pr"
+  }
+}
+```
+
+**Script name:** Use **`pr:create`** in consuming repos so commands match this package and internal docs. The CLI binary remains **`ai-pr`**. **You cannot enforce this from npm** — each repository owns its `package.json`. To align teams: use org starter templates, **`ai-pr init`**, or a CI check that `package.json` includes `scripts["pr:create"]`.
+
+---
+
+## GitHub Actions (`pr.yml`)
 
 The workflow can set **`GH_TOKEN`** from the **`PR_BOT_TOKEN`** secret and pass optional AI settings from **repository variables** / **secrets**:
 
@@ -155,63 +184,9 @@ Workflow inputs / context also set **`PR_BASE_BRANCH`**, **`PR_DRAFT`**, and **`
 
 ---
 
-## CLI reference
+## Contributing
 
-| Command | Purpose |
-| --- | --- |
-| **`pnpm run pr:create`** | **In this repository:** create or update an open PR against **`PR_BASE_BRANCH`** (default **`main`**). The root package’s `bin` is not linked into `node_modules/.bin`, so use this script instead of **`pnpm exec ai-pr`**. |
-| **`pnpm exec ai-pr`** | Directly invokes the **`ai-pr`** binary (same as the **`pr:create`** script). Prefer **`pnpm run pr:create`** when that script exists. |
-| **`pnpm exec ai-pr init`** | Env merge (**`.env`** / **`.env-example`**), optionally add **`pr:create`**. See [flags](#init-flags-and-shortcuts). |
-| **`ai-pr`** / **`ai-pr run`** | Same as **`pr:create`** when run via **`node_modules/.bin`**. |
-
----
-
-## Development (this repository)
-
-```bash
-corepack enable
-pnpm install
-pnpm exec husky
-```
-
-The **`husky`** step sets `core.hooksPath` for this checkout (it is not part of the published **`@verndale/ai-pr`** package). Omit it if you only need the CLI, not Git hooks.
-
-Copy **[`.env-example`](.env-example)** to **`.env`** (or run **`pnpm exec ai-pr init`**) and set **`GH_TOKEN`** if you run the CLI locally. On a feature branch with commits ahead of **`main`**, run **`pnpm run pr:create`**.
-
-### Commits (maintainers — not shipped in `@verndale/ai-pr`)
-
-This repo’s **devDependencies** include [**@verndale/ai-commit**](https://www.npmjs.com/package/@verndale/ai-commit) for [Conventional Commits](https://www.conventionalcommits.org/) and commitlint-aligned hooks. The **published npm package** is still only the **`ai-pr` CLI** (`bin/` + `lib/`); **`ai-commit`** is for working **in this repository**, not for consumers of **`@verndale/ai-pr`.
-
-| Command | Purpose |
-| --- | --- |
-| **`pnpm run commit`** | Stage changes, then run **`ai-commit`** (`run`). Prefer this form. |
-| **`git commit`** | Uses **`.husky/prepare-commit-msg`** and **`.husky/commit-msg`** with the same rules. |
-
-Hooks use **`ai-commit`**’s bundled preset; add a root **`commitlint.config.cjs`** only if you want editor extensions or **`commitlint` CLI** to use the same rules. Use the **`OPENAI_API_KEY`** / **`COMMIT_AI_MODEL`** row in **Maintainers — `@verndale/ai-commit`** above.
-
-**Why `pnpm commit` can fail with `ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL`:** pnpm may resolve that as **`pnpm exec commit`** instead of the **`commit`** npm script. **`pnpm run commit`** always runs the script in **`package.json`**. Also avoid a **`:`** in the project directory name on some setups.
-
-### Repository automation
-
-| Workflow | Trigger | Purpose |
-| --- | --- | --- |
-| [`.github/workflows/pr.yml`](.github/workflows/pr.yml) | Pushes to non-`main`, `workflow_dispatch` | Dogfood: install deps, run **`pnpm run pr:create`** |
-| [`.github/workflows/release.yml`](.github/workflows/release.yml) | Push to **`main`** | **semantic-release** — version bump, **`CHANGELOG.md`**, git tag, npm publish (with provenance), GitHub Release |
-
-Add repository secret **`PR_BOT_TOKEN`** (classic PAT with **`repo`**) and any AI variables from **GitHub Actions** if the default **`GITHUB_TOKEN`** is not enough or you want AI in CI.
-
----
-
-## Publishing (maintainers)
-
-Releases are automated with **semantic-release** on every push to **`main`** (see [`.releaserc.json`](.releaserc.json)).
-
-### Secrets and registry
-
-- **`NPM_TOKEN`** — must allow **`npm publish`** this package in CI without an interactive OTP. Use an **Automation** classic token or a granular token with **Bypass 2FA** for publishing, or complete **Trusted Publishing** for this repo on npm.
-- **`GITHUB_TOKEN`** — provided by Actions. If **`main`** is protected and the default token cannot push release commits, add **`SEMANTIC_RELEASE_TOKEN`** (PAT with **Contents** write).
-
-**npm provenance:** **`@semantic-release/npm`** is configured with **`"provenance": true`**. Link **Trusted Publishing** on npm to **`verndale/ai-pr`**, or set **`"provenance": false`** temporarily if publish fails until setup is complete.
+Local development, workflows in this repo, and publishing are documented in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
