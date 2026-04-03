@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/verndale/ai-pr/compare/v1.3.2...v1.3.3) (2026-04-03)
+
+
+### Bug Fixes
+
+* **ai-pr:** Update environment variable example and documentat ([6525772](https://github.com/verndale/ai-pr/commit/652577280511e25138af7f59d52b6e64143a368d))
+
 ## [1.3.2](https://github.com/verndale/ai-pr/compare/v1.3.1...v1.3.2) (2026-04-02)
 
 
