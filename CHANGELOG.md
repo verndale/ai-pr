@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/verndale/ai-pr/compare/v1.3.3...v1.3.4) (2026-04-06)
+
+
+### Bug Fixes
+
+* **lib:** Improve environment file resolution logic ([426e03c](https://github.com/verndale/ai-pr/commit/426e03c63a3cce136bacf979326ac8a9331d4e3f))
+
 ## [1.3.3](https://github.com/verndale/ai-pr/compare/v1.3.2...v1.3.3) (2026-04-03)
 
 
