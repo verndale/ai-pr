@@ -22,7 +22,7 @@ Usage:
 
 Commands:
   run   Create or update a PR (default when no subcommand is given).
-  init  Merge env and example file, add pr:create to package.json when applicable, and
+  init  Merge env and example file, add pr:create and dotenv (if missing) to package.json when applicable, and
         install .github/workflows/pr.yml at the repo root when missing (pnpm or npm template).
         Env merge targets .env.local when that file exists, else .env under the nearest
         package.json (from cwd). --force replaces .env / the resolved example file and can
@@ -159,10 +159,17 @@ function cmdInit(argv) {
   if (mergePackageJson) {
     const pkgPath = path.join(packageRoot, "package.json");
     if (fs.existsSync(pkgPath)) {
-      const { changed } = mergePackageJsonForAiPr(pkgPath);
+      const { changed, scriptChanged, dotenvAdded } = mergePackageJsonForAiPr(pkgPath);
       if (changed) {
+        const parts = [];
+        if (scriptChanged) {
+          parts.push("pr:create script");
+        }
+        if (dotenvAdded) {
+          parts.push("dotenv dependency");
+        }
         process.stdout.write(
-          "Updated package.json (pr:create script). Run your package manager install if you added dependencies.\n",
+          `Updated package.json (${parts.join(", ")}). Run your package manager install if you added dependencies.\n`,
         );
       }
     } else {
