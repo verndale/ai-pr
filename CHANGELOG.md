@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/verndale/ai-pr/compare/v1.3.4...v1.3.5) (2026-05-13)
+
+
+### Bug Fixes
+
+* **lib:** Enhance init command to include dotenv dependency ([7da32fd](https://github.com/verndale/ai-pr/commit/7da32fd7275c217262903467186d0742a043bf15))
+
 ## [1.3.4](https://github.com/verndale/ai-pr/compare/v1.3.3...v1.3.4) (2026-04-06)
 
 
